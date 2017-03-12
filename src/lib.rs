@@ -1,14 +1,14 @@
 #[macro_use]
 extern crate serde_derive;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub enum Message {
     /// Request Pong with same data
     Ping(u32),
     /// Ping reply
     Pong(u32),
     /// “useful” data transfer
-    Data(Vec<u8>),
+    Data(String),
 
     /// Host -> Puncher registration
     Register,

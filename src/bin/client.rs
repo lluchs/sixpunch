@@ -5,6 +5,7 @@ extern crate sixpunch;
 
 use sixpunch::Message;
 use std::net::{UdpSocket, SocketAddr, ToSocketAddrs};
+use std::io::{self, Write};
 use rand::Rng;
 use bincode::{serialize, deserialize};
 use clap::{Arg, App, SubCommand};
@@ -17,7 +18,7 @@ struct Client {
 }
 
 impl Client {
-    fn new<T, U>(listen_addr: T, puncher_addr: U) -> Client
+    pub fn new<T, U>(listen_addr: T, puncher_addr: U) -> Client
         where T: ToSocketAddrs, U: ToSocketAddrs {
         Client {
             socket: UdpSocket::bind(listen_addr).expect("couldn't bind socket"),
@@ -27,7 +28,7 @@ impl Client {
         }
     }
 
-    fn register_host(&mut self) -> u64 {
+    pub fn register_host(&mut self) -> u64 {
         self.send_puncher_msg(Message::Register)
             .expect("puncher register sendto failed");
         loop {
@@ -39,7 +40,7 @@ impl Client {
         }
     }
 
-    fn connect_to_host(&mut self, id: u64) -> bool {
+    pub fn connect_to_host(&mut self, id: u64) -> bool {
         self.send_puncher_msg(Message::Query(id))
             .expect("puncher query sendto failed");
         let (msg, src_addr) = self.recv_msg();
@@ -48,6 +49,13 @@ impl Client {
             other => self.handle_msg(other, &src_addr)
         }
         true
+    }
+
+    pub fn broadcast_data(&mut self, data: &str) {
+        let msg = Message::Data(data.into());
+        for addr in self.peers.clone() {
+            self.send_msg(msg.clone(), addr);
+        }
     }
 
     fn wait(&mut self) {
@@ -143,6 +151,12 @@ fn main() {
                 .expect("ID must be an integer");
             let mut client = Client::new("[::]:11126", "[::1]:11121");
             client.connect_to_host(id);
+            loop {
+                let mut input = String::new();
+                print!("> "); io::stdout().flush();
+                io::stdin().read_line(&mut input).expect("stdin read failed");
+                client.broadcast_data(&input);
+            }
         },
         _ => assert!(false)
     }
