@@ -137,11 +137,18 @@ fn main() {
                          .help("host id")
                          .required(true)
                          .index(1)))
+        .arg(Arg::with_name("puncher")
+             .help("address of puncher")
+             .long("puncher")
+             .required(true)
+             .takes_value(true))
         .get_matches();
+
+    let puncher_addr = matches.value_of("puncher").unwrap();
 
     match matches.subcommand() {
         ("host", Some(sub_m)) => {
-            let mut host = Client::new("[::]:11122", "[::1]:11121");
+            let mut host = Client::new("[::]:11122", &puncher_addr);
             let id = host.register_host();
             println!("id: {}", id);
             host.wait();
@@ -149,7 +156,7 @@ fn main() {
         ("connect", Some(sub_m)) => {
             let id = u64::from_str_radix(sub_m.value_of("ID").unwrap(), 10)
                 .expect("ID must be an integer");
-            let mut client = Client::new("[::]:11126", "[::1]:11121");
+            let mut client = Client::new("[::]:11126", &puncher_addr);
             client.connect_to_host(id);
             loop {
                 let mut input = String::new();
