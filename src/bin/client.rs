@@ -157,12 +157,13 @@ fn main() {
             let id = u64::from_str_radix(sub_m.value_of("ID").unwrap(), 10)
                 .expect("ID must be an integer");
             let mut client = Client::new("[::]:11126", &puncher_addr);
-            client.connect_to_host(id);
-            loop {
-                let mut input = String::new();
-                print!("> "); io::stdout().flush();
-                io::stdin().read_line(&mut input).expect("stdin read failed");
-                client.broadcast_data(&input);
+            if client.connect_to_host(id) {
+                loop {
+                    let mut input = String::new();
+                    print!("> "); io::stdout().flush();
+                    io::stdin().read_line(&mut input).expect("stdin read failed");
+                    client.broadcast_data(&input);
+                }
             }
         },
         _ => assert!(false)
