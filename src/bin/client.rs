@@ -84,9 +84,9 @@ impl Client {
         let maybe_reply = match msg {
             Message::Ping(x) => Some(Message::Pong(x)),
             Message::ConnectTo(addr_str) => {
-                //if *src_addr == self.puncher_addr {
+                if *src_addr == self.puncher_addr {
                     self.connect_to(addr_str.as_str());
-                //}
+                }
                 None
             }
             _ => None
@@ -133,7 +133,7 @@ fn main() {
 
     match matches.subcommand() {
         ("host", Some(sub_m)) => {
-            let mut host = Client::new("[::]:11122", "[::]:11121");
+            let mut host = Client::new("[::]:11122", "[::1]:11121");
             let id = host.register_host();
             println!("id: {}", id);
             host.wait();
@@ -141,7 +141,7 @@ fn main() {
         ("connect", Some(sub_m)) => {
             let id = u64::from_str_radix(sub_m.value_of("ID").unwrap(), 10)
                 .expect("ID must be an integer");
-            let mut client = Client::new("[::]:11126", "[::]:11121");
+            let mut client = Client::new("[::]:11126", "[::1]:11121");
             client.connect_to_host(id);
         },
         _ => assert!(false)
