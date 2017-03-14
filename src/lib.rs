@@ -1,5 +1,9 @@
 #[macro_use]
 extern crate serde_derive;
+extern crate bincode;
+extern crate rand;
+
+pub mod udp;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub enum Message {
@@ -20,4 +24,15 @@ pub enum Message {
     ConnectTo(String), // TODO: More efficient representation
     /// Puncher -> Client for invalid id
     NotFound(u64),
+}
+
+pub trait Puncher {
+    fn run(&mut self);
+}
+
+pub trait Client {
+    fn register_host(&mut self) -> u64;
+    fn wait(&mut self);
+    fn connect_to_host(&mut self, id: u64) -> bool;
+    fn broadcast_data(&mut self, data: &str);
 }
